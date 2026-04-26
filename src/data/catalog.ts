@@ -1,6 +1,15 @@
 import room1 from "@/assets/room-1.jpg";
 import room2 from "@/assets/room-2.jpg";
 import room3 from "@/assets/room-3.jpg";
+import courseExcel from "@/assets/course-excel.jpg";
+import courseCyber from "@/assets/course-cyber.jpg";
+import courseReact from "@/assets/course-react.jpg";
+import courseUiux from "@/assets/course-uiux.jpg";
+import coursePowerbi from "@/assets/course-powerbi.jpg";
+import courseAi from "@/assets/course-ai.jpg";
+import testi1 from "@/assets/testi-1.jpg";
+import testi2 from "@/assets/testi-2.jpg";
+import testi3 from "@/assets/testi-3.jpg";
 
 export type Course = {
   id: string;
@@ -11,6 +20,7 @@ export type Course = {
   groupPrice?: number;
   status: "Ada Tempat" | "Hampir Penuh" | "Penuh";
   shortDesc: string;
+  image: string;
   syllabus: string[];
   prerequisites: string;
   facilitator: string;
