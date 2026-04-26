@@ -14,15 +14,27 @@ export const CourseCard = ({ course }: { course: Course }) => {
   return (
     <Link
       to={`/kursus/${course.id}`}
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-soft transition-smooth hover:-translate-y-1 hover:border-accent/40 hover:shadow-elegant"
+      className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-smooth hover:-translate-y-1 hover:border-accent/40 hover:shadow-elegant"
     >
+      <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+        <img
+          src={course.image}
+          alt={course.title}
+          loading="lazy"
+          width={800}
+          height={500}
+          className="h-full w-full object-cover transition-smooth group-hover:scale-105"
+        />
+        <span className={cn("absolute right-3 top-3 inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium backdrop-blur-sm", statusStyle)}>
+          {course.status}
+        </span>
+      </div>
+
+      <div className="flex flex-1 flex-col p-6">
       <div className="flex items-start justify-between gap-3">
         <Badge variant="outline" className="border-accent/30 bg-accent-soft text-accent">
           {course.category}
         </Badge>
-        <span className={cn("inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium", statusStyle)}>
-          {course.status}
-        </span>
       </div>
 
       <h3 className="mt-4 font-display text-lg font-bold leading-snug text-foreground group-hover:text-accent">
@@ -52,6 +64,7 @@ export const CourseCard = ({ course }: { course: Course }) => {
         <span className="inline-flex items-center gap-1 text-sm font-medium text-accent transition-base group-hover:gap-2">
           Butiran <ArrowRight className="h-4 w-4" />
         </span>
+      </div>
       </div>
     </Link>
   );
