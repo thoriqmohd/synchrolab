@@ -1,4 +1,4 @@
-import { Building2, CalendarCheck, Mail, MapPin, LogOut } from "lucide-react";
+import { Building2, CalendarCheck, Mail, MapPin, LogOut, Users } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { NavLink } from "@/components/NavLink";
 import {
@@ -18,10 +18,11 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 const items = [
+  { title: "Tempahan", url: "/admin/bookings", icon: CalendarCheck },
+  { title: "Pengguna", url: "/admin/users", icon: Users },
   { title: "Anjur Kursus", url: "/admin/host-requests", icon: Building2 },
   { title: "Senarai Tempat", url: "/admin/venue-listings", icon: MapPin },
   { title: "Hubungi Kami", url: "/admin/contact-messages", icon: Mail },
-  { title: "Tempahan", url: "/admin/bookings", icon: CalendarCheck },
 ];
 
 export function AdminSidebar() {
