@@ -20,6 +20,8 @@ import VenueListingsAdmin from "./pages/admin/VenueListingsAdmin.tsx";
 import ContactMessagesAdmin from "./pages/admin/ContactMessagesAdmin.tsx";
 import BookingsAdmin from "./pages/admin/BookingsAdmin.tsx";
 import UsersAdmin from "./pages/admin/UsersAdmin.tsx";
+import CoursesAdmin from "./pages/admin/CoursesAdmin.tsx";
+import RoomsAdmin from "./pages/admin/RoomsAdmin.tsx";
 import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
@@ -49,6 +51,8 @@ const App = () => (
             <Route path="contact-messages" element={<ContactMessagesAdmin />} />
             <Route path="bookings" element={<BookingsAdmin />} />
             <Route path="users" element={<UsersAdmin />} />
+            <Route path="courses" element={<CoursesAdmin />} />
+            <Route path="rooms" element={<RoomsAdmin />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
