@@ -1,0 +1,56 @@
+import { Mail, MapPin, Phone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+
+const Contact = () => {
+  return (
+    <>
+      <section className="bg-gradient-hero py-16">
+        <div className="container max-w-3xl text-center">
+          <h1 className="font-display text-4xl font-extrabold text-white md:text-5xl">Hubungi Kami</h1>
+          <p className="mt-4 text-white/80">Kami sedia membantu anda — daripada pertanyaan kursus hinggalah cadangan latihan tertutup.</p>
+        </div>
+      </section>
+
+      <section className="container py-14">
+        <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
+          <div className="space-y-4">
+            {[
+              { icon: MapPin, title: "Lokasi", lines: ["Synchronetwork Sdn Bhd", "Cyberjaya, Selangor, Malaysia"] },
+              { icon: Mail, title: "E-mel", lines: ["booking@synchrolab.my", "info@synchronetwork.my"] },
+              { icon: Phone, title: "Telefon", lines: ["+603-1234 5678", "Isnin – Jumaat, 9am – 6pm"] },
+            ].map((c) => (
+              <div key={c.title} className="flex gap-4 rounded-2xl border border-border bg-card p-5">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-accent shadow-glow">
+                  <c.icon className="h-5 w-5 text-accent-foreground" />
+                </div>
+                <div>
+                  <p className="font-display font-bold text-foreground">{c.title}</p>
+                  {c.lines.map((l) => <p key={l} className="text-sm text-muted-foreground">{l}</p>)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <form
+            onSubmit={(e) => { e.preventDefault(); toast.success("Mesej dihantar! Kami akan balas dalam 1 hari bekerja."); }}
+            className="space-y-4 rounded-2xl border border-border bg-card p-8 shadow-soft"
+          >
+            <div className="grid gap-4 md:grid-cols-2">
+              <div><Label>Nama</Label><Input required className="mt-1.5" /></div>
+              <div><Label>E-mel</Label><Input required type="email" className="mt-1.5" /></div>
+            </div>
+            <div><Label>Subjek</Label><Input required className="mt-1.5" /></div>
+            <div><Label>Mesej</Label><Textarea required rows={5} className="mt-1.5" /></div>
+            <Button type="submit" variant="accent" size="lg" className="w-full">Hantar Mesej</Button>
+          </form>
+        </div>
+      </section>
+    </>
+  );
+};
+
+export default Contact;
