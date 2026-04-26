@@ -55,7 +55,7 @@ const mapCourse = (r: any): CourseRow => ({
   prerequisites: r.prerequisites,
   facilitator: r.facilitator,
   certificate: r.certificate,
-  image: getCourseImage(r.slug),
+  image: r.image_url || getCourseImage(r.slug),
 });
 
 const mapRoom = (r: any): RoomRow => ({
@@ -67,7 +67,7 @@ const mapRoom = (r: any): RoomRow => ({
   daily_rate: Number(r.daily_rate),
   facilities: Array.isArray(r.facilities) ? r.facilities : [],
   description: r.description,
-  image: getRoomImage(r.slug),
+  image: r.image_url || getRoomImage(r.slug),
 });
 
 export const useCourses = () =>
