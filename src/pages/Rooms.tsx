@@ -1,20 +1,76 @@
-import { Check, Users } from "lucide-react";
-import { rooms } from "@/data/catalog";
+import { useMemo, useState, useEffect } from "react";
+import { Check, CheckCircle2, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useRooms } from "@/hooks/useCatalog";
+import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+const schema = z.object({
+  room_id: z.string().uuid("Sila pilih bilik"),
+  date: z.string().min(1, "Sila masukkan tarikh"),
+  duration: z.number().int().min(1).max(12),
+  customer_name: z.string().trim().min(2).max(200),
+  email: z.string().trim().email().max(255),
+  phone: z.string().trim().min(6).max(30),
+  notes: z.string().trim().max(2000).optional().or(z.literal("")),
+});
 
 const Rooms = () => {
-  const [form, setForm] = useState({ room: rooms[0].id, date: "", time: "", duration: "", name: "", email: "", phone: "", notes: "" });
+  const { data: rooms = [], isLoading } = useRooms();
+  const [form, setForm] = useState({ room_id: "", date: "", time: "", duration: 4, customer_name: "", email: "", phone: "", notes: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [refNo, setRefNo] = useState<string | null>(null);
 
-  const submit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!form.room_id && rooms.length > 0) setForm((f) => ({ ...f, room_id: rooms[0].id }));
+  }, [rooms, form.room_id]);
+
+  const selectedRoom = useMemo(() => rooms.find((r) => r.id === form.room_id), [rooms, form.room_id]);
+
+  const total = useMemo(() => {
+    if (!selectedRoom) return 0;
+    if (form.duration >= 8) return selectedRoom.daily_rate;
+    return selectedRoom.hourly_rate * form.duration;
+  }, [selectedRoom, form.duration]);
+
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Permohonan tempahan diterima!", {
-      description: "Pasukan kami akan menghubungi anda dalam masa 24 jam untuk pengesahan.",
-    });
+    const parsed = schema.safeParse(form);
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0].message);
+      return;
+    }
+    setSubmitting(true);
+    const { data: user } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from("bookings")
+      .insert({
+        type: "room",
+        room_id: parsed.data.room_id,
+        booking_date_from: parsed.data.date,
+        booking_date_to: parsed.data.date,
+        customer_name: parsed.data.customer_name,
+        email: parsed.data.email,
+        phone: parsed.data.phone,
+        num_pax: 1,
+        total_amount: total,
+        notes: `Masa: ${form.time || "-"} • Tempoh: ${parsed.data.duration} jam${parsed.data.notes ? ` • ${parsed.data.notes}` : ""}`,
+        user_id: user.user?.id ?? null,
+      })
+      .select("ref_no")
+      .single();
+    setSubmitting(false);
+    if (error) {
+      toast.error("Gagal menempah", { description: error.message });
+      return;
+    }
+    setRefNo(data.ref_no);
+    setForm({ room_id: rooms[0]?.id ?? "", date: "", time: "", duration: 4, customer_name: "", email: "", phone: "", notes: "" });
+    toast.success("Tempahan diterima!", { description: `Rujukan: ${data.ref_no}` });
   };
 
   return (
@@ -30,44 +86,48 @@ const Rooms = () => {
       </section>
 
       <section className="container py-14">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {rooms.map((r) => (
-            <div key={r.id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-smooth hover:shadow-elegant">
-              <div className="aspect-[4/3] overflow-hidden bg-muted">
-                <img src={r.image} alt={r.name} loading="lazy" width={1200} height={800} className="h-full w-full object-cover transition-smooth hover:scale-105" />
-              </div>
-              <div className="p-6">
-                <div className="flex items-start justify-between gap-3">
-                  <h3 className="font-display text-xl font-bold text-foreground">{r.name}</h3>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
-                    <Users className="h-3 w-3" /> {r.capacity}
-                  </span>
+        {isLoading ? (
+          <div className="flex justify-center py-16 text-muted-foreground"><Loader2 className="h-6 w-6 animate-spin" /></div>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-3">
+            {rooms.map((r) => (
+              <div key={r.id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-soft transition-smooth hover:shadow-elegant">
+                <div className="aspect-[4/3] overflow-hidden bg-muted">
+                  <img src={r.image} alt={r.name} loading="lazy" width={1200} height={800} className="h-full w-full object-cover transition-smooth hover:scale-105" />
                 </div>
-                <p className="mt-2 text-sm text-muted-foreground">{r.description}</p>
-
-                <ul className="mt-4 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-foreground/80">
-                  {r.facilities.map((f) => (
-                    <li key={f} className="flex items-center gap-1.5">
-                      <Check className="h-3 w-3 text-success" /> {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-5 flex items-end justify-between border-t border-border pt-4">
-                  <div>
-                    <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Per jam / hari</p>
-                    <p className="font-display text-lg font-bold text-primary">
-                      RM{r.hourlyRate} <span className="text-sm font-normal text-muted-foreground">/ RM{r.dailyRate}</span>
-                    </p>
+                <div className="p-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-display text-xl font-bold text-foreground">{r.name}</h3>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">
+                      <Users className="h-3 w-3" /> {r.capacity}
+                    </span>
                   </div>
-                  <Button size="sm" variant="accent" onClick={() => { setForm((f) => ({ ...f, room: r.id })); document.getElementById("booking-form")?.scrollIntoView({ behavior: "smooth" }); }}>
-                    Tempah
-                  </Button>
+                  <p className="mt-2 text-sm text-muted-foreground">{r.description}</p>
+
+                  <ul className="mt-4 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-foreground/80">
+                    {r.facilities.map((f) => (
+                      <li key={f} className="flex items-center gap-1.5">
+                        <Check className="h-3 w-3 text-success" /> {f}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="mt-5 flex items-end justify-between border-t border-border pt-4">
+                    <div>
+                      <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Per jam / hari</p>
+                      <p className="font-display text-lg font-bold text-primary">
+                        RM{r.hourly_rate} <span className="text-sm font-normal text-muted-foreground">/ RM{r.daily_rate}</span>
+                      </p>
+                    </div>
+                    <Button size="sm" variant="accent" onClick={() => { setForm((f) => ({ ...f, room_id: r.id })); document.getElementById("booking-form")?.scrollIntoView({ behavior: "smooth" }); }}>
+                      Tempah
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Booking form */}
@@ -78,10 +138,18 @@ const Rooms = () => {
             <h2 className="mt-2 font-display text-3xl font-bold text-foreground">Semak ketersediaan & tempah</h2>
           </div>
 
+          {refNo && (
+            <div className="mx-auto mt-8 max-w-xl rounded-xl border border-success/30 bg-success/5 p-5 text-center">
+              <CheckCircle2 className="mx-auto h-8 w-8 text-success" />
+              <p className="mt-2 font-display text-lg font-bold text-foreground">Tempahan diterima!</p>
+              <p className="mt-1 text-sm text-muted-foreground">Nombor rujukan: <span className="font-bold text-primary">{refNo}</span></p>
+            </div>
+          )}
+
           <form onSubmit={submit} className="mt-10 grid gap-5 rounded-2xl border border-border bg-card p-8 shadow-soft md:grid-cols-2">
             <div className="md:col-span-2">
               <Label>Bilik latihan</Label>
-              <select required value={form.room} onChange={(e) => setForm({ ...form, room: e.target.value })} className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+              <select required value={form.room_id} onChange={(e) => setForm({ ...form, room_id: e.target.value })} className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
                 {rooms.map((r) => <option key={r.id} value={r.id}>{r.name} (kapasiti {r.capacity})</option>)}
               </select>
             </div>
@@ -95,12 +163,18 @@ const Rooms = () => {
               <Input required type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} className="mt-1.5" />
             </div>
             <div>
-              <Label>Tempoh (jam)</Label>
-              <Input required type="number" min={1} max={12} value={form.duration} onChange={(e) => setForm({ ...form, duration: e.target.value })} className="mt-1.5" />
+              <Label>Tempoh (jam) — 8 jam = kadar harian</Label>
+              <Input required type="number" min={1} max={12} value={form.duration} onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })} className="mt-1.5" />
+            </div>
+            <div className="flex items-end">
+              <div className="w-full rounded-lg border border-border bg-secondary/40 px-4 py-2.5">
+                <p className="text-xs text-muted-foreground">Anggaran jumlah</p>
+                <p className="font-display text-lg font-bold text-primary">RM{total.toLocaleString()}</p>
+              </div>
             </div>
             <div>
               <Label>Nama penuh</Label>
-              <Input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="mt-1.5" />
+              <Input required value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} className="mt-1.5" />
             </div>
             <div>
               <Label>E-mel</Label>
@@ -114,8 +188,8 @@ const Rooms = () => {
               <Label>Keperluan khas</Label>
               <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="mt-1.5" placeholder="Cth: setup teater, perlu mikrofon tambahan, jamuan minum..." />
             </div>
-            <Button type="submit" variant="accent" size="lg" className="md:col-span-2">
-              Hantar Permohonan Tempahan
+            <Button type="submit" variant="accent" size="lg" className="md:col-span-2" disabled={submitting}>
+              {submitting ? "Memproses..." : "Hantar Permohonan Tempahan"}
             </Button>
           </form>
         </div>
