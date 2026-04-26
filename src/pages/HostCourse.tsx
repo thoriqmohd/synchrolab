@@ -163,6 +163,16 @@ const HostCourse = () => {
                     <Label htmlFor="participants">Jumlah Peserta</Label>
                     <Input id="participants" name="participants" type="number" min={1} className="mt-1.5" placeholder="20" />
                   </div>
+                </div>
+                <div>
+                  <Label htmlFor="location">Lokasi Latihan</Label>
+                  <Input id="location" name="location" className="mt-1.5" placeholder="Bandar / Negeri" />
+                </div>
+                <div>
+                  <Label htmlFor="notes">Keperluan Tambahan</Label>
+                  <Textarea id="notes" name="notes" className="mt-1.5" rows={3} placeholder="Tarikh dicadangkan, objektif latihan, dll." />
+                </div>
+              </div>
 
               <Button type="submit" variant="accent" size="lg" className="mt-6 w-full" disabled={submitting}>
                 <Send className="h-4 w-4" />
