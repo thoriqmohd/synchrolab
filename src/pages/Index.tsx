@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Award, CalendarCheck, CheckCircle2, GraduationCap, Quote, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, Award, CalendarCheck, CheckCircle2, GraduationCap, Loader2, Quote, Shield, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CourseCard } from "@/components/CourseCard";
-import { courses, testimonials } from "@/data/catalog";
+import { testimonials } from "@/data/catalog";
+import { useCourses } from "@/hooks/useCatalog";
 import heroImg from "@/assets/hero-training.jpg";
 
 const features = [
@@ -13,6 +14,7 @@ const features = [
 ];
 
 const Index = () => {
+  const { data: courses = [], isLoading } = useCourses();
   const featured = courses.slice(0, 3);
 
   return (
@@ -72,9 +74,15 @@ const Index = () => {
             </Button>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {featured.map((c) => <CourseCard key={c.id} course={c} />)}
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-16 text-muted-foreground">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+          ) : (
+            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {featured.map((c) => <CourseCard key={c.id} course={c} />)}
+            </div>
+          )}
         </div>
       </section>
 

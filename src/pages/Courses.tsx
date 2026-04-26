@@ -1,21 +1,23 @@
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { CourseCard } from "@/components/CourseCard";
-import { categories, courses } from "@/data/catalog";
+import { categories } from "@/data/catalog";
+import { useCourses } from "@/hooks/useCatalog";
 import { cn } from "@/lib/utils";
 
 const Courses = () => {
+  const { data: courses = [], isLoading, error } = useCourses();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<typeof categories[number]>("Semua");
 
   const filtered = useMemo(() => {
     return courses.filter((c) => {
       const matchCat = cat === "Semua" || c.category === cat;
-      const matchQ = !q || (c.title + c.shortDesc).toLowerCase().includes(q.toLowerCase());
+      const matchQ = !q || (c.title + c.short_desc).toLowerCase().includes(q.toLowerCase());
       return matchCat && matchQ;
     });
-  }, [q, cat]);
+  }, [q, cat, courses]);
 
   return (
     <>
@@ -60,14 +62,30 @@ const Courses = () => {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((c) => <CourseCard key={c.id} course={c} />)}
-        </div>
-
-        {filtered.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border py-20 text-center">
-            <p className="text-muted-foreground">Tiada kursus dijumpai. Cuba kata kunci lain.</p>
+        {isLoading && (
+          <div className="flex justify-center py-20 text-muted-foreground">
+            <Loader2 className="h-6 w-6 animate-spin" />
           </div>
+        )}
+
+        {error && (
+          <div className="rounded-2xl border border-destructive/30 bg-destructive/5 py-10 text-center text-destructive">
+            Gagal memuatkan kursus. Sila cuba semula.
+          </div>
+        )}
+
+        {!isLoading && !error && (
+          <>
+            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((c) => <CourseCard key={c.id} course={c} />)}
+            </div>
+
+            {filtered.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-border py-20 text-center">
+                <p className="text-muted-foreground">Tiada kursus dijumpai. Cuba kata kunci lain.</p>
+              </div>
+            )}
+          </>
         )}
       </section>
     </>
