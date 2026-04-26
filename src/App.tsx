@@ -13,6 +13,13 @@ import Contact from "./pages/Contact.tsx";
 import HostCourse from "./pages/HostCourse.tsx";
 import ListVenue from "./pages/ListVenue.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import Auth from "./pages/Auth.tsx";
+import AdminLayout from "./components/admin/AdminLayout.tsx";
+import HostRequestsAdmin from "./pages/admin/HostRequestsAdmin.tsx";
+import VenueListingsAdmin from "./pages/admin/VenueListingsAdmin.tsx";
+import ContactMessagesAdmin from "./pages/admin/ContactMessagesAdmin.tsx";
+import BookingsAdmin from "./pages/admin/BookingsAdmin.tsx";
+import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +39,14 @@ const App = () => (
             <Route path="/senarai-tempat" element={<ListVenue />} />
             <Route path="/semak-tempahan" element={<CheckBooking />} />
             <Route path="/hubungi" element={<Contact />} />
+          </Route>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="/admin/host-requests" replace />} />
+            <Route path="host-requests" element={<HostRequestsAdmin />} />
+            <Route path="venue-listings" element={<VenueListingsAdmin />} />
+            <Route path="contact-messages" element={<ContactMessagesAdmin />} />
+            <Route path="bookings" element={<BookingsAdmin />} />
           </Route>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
