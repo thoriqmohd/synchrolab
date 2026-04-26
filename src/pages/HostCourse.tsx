@@ -138,41 +138,31 @@ const HostCourse = () => {
               <div className="mt-6 space-y-4">
                 <div>
                   <Label htmlFor="company">Nama Syarikat / Organisasi *</Label>
-                  <Input id="company" required className="mt-1.5" placeholder="Contoh: ABC Sdn Bhd" />
+                  <Input id="company" name="company" required className="mt-1.5" placeholder="Contoh: ABC Sdn Bhd" />
                 </div>
                 <div>
                   <Label htmlFor="name">Nama Penuh PIC *</Label>
-                  <Input id="name" required className="mt-1.5" placeholder="Nama anda" />
+                  <Input id="name" name="name" required className="mt-1.5" placeholder="Nama anda" />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <Label htmlFor="email">Emel *</Label>
-                    <Input id="email" type="email" required className="mt-1.5" placeholder="anda@syarikat.com" />
+                    <Input id="email" name="email" type="email" required className="mt-1.5" placeholder="anda@syarikat.com" />
                   </div>
                   <div>
                     <Label htmlFor="phone">No. Telefon *</Label>
-                    <Input id="phone" type="tel" required className="mt-1.5" placeholder="012-3456789" />
+                    <Input id="phone" name="phone" type="tel" required className="mt-1.5" placeholder="012-3456789" />
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <Label htmlFor="topic">Topik Kursus</Label>
-                    <Input id="topic" className="mt-1.5" placeholder="Contoh: Excel Lanjutan" />
+                    <Input id="topic" name="topic" className="mt-1.5" placeholder="Contoh: Excel Lanjutan" />
                   </div>
                   <div>
                     <Label htmlFor="participants">Jumlah Peserta</Label>
-                    <Input id="participants" type="number" min={1} className="mt-1.5" placeholder="20" />
+                    <Input id="participants" name="participants" type="number" min={1} className="mt-1.5" placeholder="20" />
                   </div>
-                </div>
-                <div>
-                  <Label htmlFor="location">Lokasi Latihan</Label>
-                  <Input id="location" className="mt-1.5" placeholder="Bandar / Negeri" />
-                </div>
-                <div>
-                  <Label htmlFor="notes">Keperluan Tambahan</Label>
-                  <Textarea id="notes" className="mt-1.5" rows={3} placeholder="Tarikh dicadangkan, objektif latihan, dll." />
-                </div>
-              </div>
 
               <Button type="submit" variant="accent" size="lg" className="mt-6 w-full" disabled={submitting}>
                 <Send className="h-4 w-4" />
