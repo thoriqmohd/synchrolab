@@ -37,15 +37,17 @@ const Auth = () => {
     }
 
     setSubmitting(true);
+    const { email, password } = parsed.data;
     try {
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword(parsed.data);
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         toast.success("Berjaya log masuk");
         navigate("/admin", { replace: true });
       } else {
         const { error } = await supabase.auth.signUp({
-          ...parsed.data,
+          email,
+          password,
           options: { emailRedirectTo: `${window.location.origin}/admin` },
         });
         if (error) throw error;
