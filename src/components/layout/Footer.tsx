@@ -5,8 +5,8 @@ export const Footer = () => {
   return (
     <footer className="border-t border-border/60 bg-primary text-primary-foreground">
       <div className="container py-14">
-        <div className="grid gap-10 md:grid-cols-4">
-          <div className="md:col-span-1">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+          <div>
             <div className="flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-accent">
                 <span className="font-display text-lg font-bold text-accent-foreground">S</span>
@@ -25,6 +25,14 @@ export const Footer = () => {
               <li><Link to="/sewa-bilik" className="hover:text-accent">Sewa Bilik Latihan</Link></li>
               <li><Link to="/semak-tempahan" className="hover:text-accent">Semak Tempahan</Link></li>
               <li><Link to="/hubungi" className="hover:text-accent">Hubungi Kami</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-display text-sm font-semibold uppercase tracking-wider">Untuk Rakan Kongsi</h4>
+            <ul className="mt-4 space-y-2 text-sm text-primary-foreground/70">
+              <li><Link to="/anjur-kursus" className="hover:text-accent">Anjur Kursus di Tempat Anda</Link></li>
+              <li><Link to="/senarai-tempat" className="hover:text-accent">Senaraikan Tempat Latihan</Link></li>
             </ul>
           </div>
 
