@@ -5,6 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
+
+const hostSchema = z.object({
+  company: z.string().trim().min(2, "Nama syarikat terlalu pendek").max(200),
+  contact_name: z.string().trim().min(2, "Nama PIC terlalu pendek").max(200),
+  email: z.string().trim().email("Emel tidak sah").max(255),
+  phone: z.string().trim().min(6, "No. telefon tidak sah").max(30),
+  topic: z.string().trim().max(300).optional().or(z.literal("")),
+  num_participants: z.number().int().positive().max(10000).optional(),
+  location: z.string().trim().max(300).optional().or(z.literal("")),
+  notes: z.string().trim().max(2000).optional().or(z.literal("")),
+});
 
 const benefits = [
   { icon: GraduationCap, title: "Trainer bertauliah", desc: "Pasukan trainer kami akan datang ke premis anda dengan bahan & peralatan lengkap." },
@@ -15,16 +28,51 @@ const benefits = [
 const HostCourse = () => {
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const participantsRaw = (fd.get("participants") as string)?.trim();
+
+    const payload = {
+      company: (fd.get("company") as string) ?? "",
+      contact_name: (fd.get("name") as string) ?? "",
+      email: (fd.get("email") as string) ?? "",
+      phone: (fd.get("phone") as string) ?? "",
+      topic: ((fd.get("topic") as string) ?? "").trim() || undefined,
+      num_participants: participantsRaw ? Number(participantsRaw) : undefined,
+      location: ((fd.get("location") as string) ?? "").trim() || undefined,
+      notes: ((fd.get("notes") as string) ?? "").trim() || undefined,
+    };
+
+    const parsed = hostSchema.safeParse(payload);
+    if (!parsed.success) {
+      toast.error("Sila semak borang", { description: parsed.error.issues[0].message });
+      return;
+    }
+
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      (e.target as HTMLFormElement).reset();
-      toast.success("Permohonan dihantar!", {
-        description: "Pasukan kami akan menghubungi anda dalam masa 1-2 hari bekerja.",
-      });
-    }, 800);
+    const { error } = await supabase.from("host_course_requests").insert({
+      company: parsed.data.company,
+      contact_name: parsed.data.contact_name,
+      email: parsed.data.email,
+      phone: parsed.data.phone,
+      topic: parsed.data.topic || null,
+      num_participants: parsed.data.num_participants ?? null,
+      location: parsed.data.location || null,
+      notes: parsed.data.notes || null,
+    });
+    setSubmitting(false);
+
+    if (error) {
+      toast.error("Gagal menghantar", { description: error.message });
+      return;
+    }
+
+    form.reset();
+    toast.success("Permohonan dihantar!", {
+      description: "Pasukan kami akan menghubungi anda dalam masa 1-2 hari bekerja.",
+    });
   };
 
   return (
@@ -90,39 +138,39 @@ const HostCourse = () => {
               <div className="mt-6 space-y-4">
                 <div>
                   <Label htmlFor="company">Nama Syarikat / Organisasi *</Label>
-                  <Input id="company" required className="mt-1.5" placeholder="Contoh: ABC Sdn Bhd" />
+                  <Input id="company" name="company" required className="mt-1.5" placeholder="Contoh: ABC Sdn Bhd" />
                 </div>
                 <div>
                   <Label htmlFor="name">Nama Penuh PIC *</Label>
-                  <Input id="name" required className="mt-1.5" placeholder="Nama anda" />
+                  <Input id="name" name="name" required className="mt-1.5" placeholder="Nama anda" />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <Label htmlFor="email">Emel *</Label>
-                    <Input id="email" type="email" required className="mt-1.5" placeholder="anda@syarikat.com" />
+                    <Input id="email" name="email" type="email" required className="mt-1.5" placeholder="anda@syarikat.com" />
                   </div>
                   <div>
                     <Label htmlFor="phone">No. Telefon *</Label>
-                    <Input id="phone" type="tel" required className="mt-1.5" placeholder="012-3456789" />
+                    <Input id="phone" name="phone" type="tel" required className="mt-1.5" placeholder="012-3456789" />
                   </div>
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <Label htmlFor="topic">Topik Kursus</Label>
-                    <Input id="topic" className="mt-1.5" placeholder="Contoh: Excel Lanjutan" />
+                    <Input id="topic" name="topic" className="mt-1.5" placeholder="Contoh: Excel Lanjutan" />
                   </div>
                   <div>
                     <Label htmlFor="participants">Jumlah Peserta</Label>
-                    <Input id="participants" type="number" min={1} className="mt-1.5" placeholder="20" />
+                    <Input id="participants" name="participants" type="number" min={1} className="mt-1.5" placeholder="20" />
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="location">Lokasi Latihan</Label>
-                  <Input id="location" className="mt-1.5" placeholder="Bandar / Negeri" />
+                  <Input id="location" name="location" className="mt-1.5" placeholder="Bandar / Negeri" />
                 </div>
                 <div>
                   <Label htmlFor="notes">Keperluan Tambahan</Label>
-                  <Textarea id="notes" className="mt-1.5" rows={3} placeholder="Tarikh dicadangkan, objektif latihan, dll." />
+                  <Textarea id="notes" name="notes" className="mt-1.5" rows={3} placeholder="Tarikh dicadangkan, objektif latihan, dll." />
                 </div>
               </div>
 
