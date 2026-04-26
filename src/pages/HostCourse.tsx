@@ -5,6 +5,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
+
+const hostSchema = z.object({
+  company: z.string().trim().min(2, "Nama syarikat terlalu pendek").max(200),
+  contact_name: z.string().trim().min(2, "Nama PIC terlalu pendek").max(200),
+  email: z.string().trim().email("Emel tidak sah").max(255),
+  phone: z.string().trim().min(6, "No. telefon tidak sah").max(30),
+  topic: z.string().trim().max(300).optional().or(z.literal("")),
+  num_participants: z.number().int().positive().max(10000).optional(),
+  location: z.string().trim().max(300).optional().or(z.literal("")),
+  notes: z.string().trim().max(2000).optional().or(z.literal("")),
+});
 
 const benefits = [
   { icon: GraduationCap, title: "Trainer bertauliah", desc: "Pasukan trainer kami akan datang ke premis anda dengan bahan & peralatan lengkap." },
@@ -15,16 +28,51 @@ const benefits = [
 const HostCourse = () => {
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const participantsRaw = (fd.get("participants") as string)?.trim();
+
+    const payload = {
+      company: (fd.get("company") as string) ?? "",
+      contact_name: (fd.get("name") as string) ?? "",
+      email: (fd.get("email") as string) ?? "",
+      phone: (fd.get("phone") as string) ?? "",
+      topic: ((fd.get("topic") as string) ?? "").trim() || undefined,
+      num_participants: participantsRaw ? Number(participantsRaw) : undefined,
+      location: ((fd.get("location") as string) ?? "").trim() || undefined,
+      notes: ((fd.get("notes") as string) ?? "").trim() || undefined,
+    };
+
+    const parsed = hostSchema.safeParse(payload);
+    if (!parsed.success) {
+      toast.error("Sila semak borang", { description: parsed.error.issues[0].message });
+      return;
+    }
+
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
-      (e.target as HTMLFormElement).reset();
-      toast.success("Permohonan dihantar!", {
-        description: "Pasukan kami akan menghubungi anda dalam masa 1-2 hari bekerja.",
-      });
-    }, 800);
+    const { error } = await supabase.from("host_course_requests").insert({
+      company: parsed.data.company,
+      contact_name: parsed.data.contact_name,
+      email: parsed.data.email,
+      phone: parsed.data.phone,
+      topic: parsed.data.topic || null,
+      num_participants: parsed.data.num_participants ?? null,
+      location: parsed.data.location || null,
+      notes: parsed.data.notes || null,
+    });
+    setSubmitting(false);
+
+    if (error) {
+      toast.error("Gagal menghantar", { description: error.message });
+      return;
+    }
+
+    form.reset();
+    toast.success("Permohonan dihantar!", {
+      description: "Pasukan kami akan menghubungi anda dalam masa 1-2 hari bekerja.",
+    });
   };
 
   return (
