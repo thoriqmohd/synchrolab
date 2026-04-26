@@ -38,6 +38,7 @@ export const courses: Course[] = [
     groupPrice: 750,
     status: "Ada Tempat",
     shortDesc: "Kuasai Pivot Table, Power Query, formula lanjutan dan automasi laporan dengan Excel.",
+    image: courseExcel,
     syllabus: [
       "Formula & fungsi lanjutan (XLOOKUP, INDEX/MATCH, LET)",
       "Pivot Table & Pivot Chart untuk analisis data",
@@ -63,6 +64,7 @@ export const courses: Course[] = [
     groupPrice: 1650,
     status: "Hampir Penuh",
     shortDesc: "Lindungi organisasi anda daripada ancaman siber dengan amalan terbaik industri.",
+    image: courseCyber,
     syllabus: [
       "Landskap ancaman siber semasa di Malaysia",
       "Phishing, ransomware & social engineering",
@@ -86,6 +88,7 @@ export const courses: Course[] = [
     price: 2950,
     status: "Ada Tempat",
     shortDesc: "Bootcamp intensif untuk bina aplikasi web moden dari frontend hingga backend.",
+    image: courseReact,
     syllabus: [
       "JavaScript ES6+ & TypeScript",
       "React 18: Hooks, Context, React Query",
@@ -109,6 +112,7 @@ export const courses: Course[] = [
     price: 950,
     status: "Ada Tempat",
     shortDesc: "Reka bentuk antara muka yang cantik dan mesra pengguna menggunakan Figma.",
+    image: courseUiux,
     syllabus: [
       "Prinsip design & user experience",
       "Figma: components, auto-layout, variants",
@@ -134,6 +138,7 @@ export const courses: Course[] = [
     groupPrice: 1450,
     status: "Ada Tempat",
     shortDesc: "Tukar data mentah kepada dashboard berimpak tinggi dengan Microsoft Power BI.",
+    image: coursePowerbi,
     syllabus: [
       "Pengenalan Business Intelligence",
       "Power BI Desktop & Power Query",
@@ -157,6 +162,7 @@ export const courses: Course[] = [
     price: 480,
     status: "Penuh",
     shortDesc: "Manfaatkan AI generatif untuk tingkatkan produktiviti harian organisasi anda.",
+    image: courseAi,
     syllabus: [
       "Pengenalan AI generatif & LLM",
       "Teknik prompting berkesan",
@@ -226,3 +232,31 @@ export const categories = [
   "Pengaturcaraan",
   "Data & AI",
 ] as const;
+
+export type Testimonial = {
+  name: string;
+  role: string;
+  text: string;
+  image: string;
+};
+
+export const testimonials: Testimonial[] = [
+  {
+    name: "Aizat Rahman",
+    role: "IT Manager, Petronas Subsidiary",
+    text: "Kursus Cybersecurity Synchrolab sangat praktikal. Trainer beri contoh kes sebenar di Malaysia. Highly recommended!",
+    image: testi1,
+  },
+  {
+    name: "Nurin Sofea",
+    role: "Data Analyst, CIMB",
+    text: "Selepas kursus Power BI 3 hari, saya dah boleh bina dashboard sendiri untuk pasukan. Bahan kursus pun lengkap.",
+    image: testi2,
+  },
+  {
+    name: "Daniel Wong",
+    role: "Founder, TechStartup MY",
+    text: "Sewa auditorium untuk product launch — kemudahan top notch, harga berpatutan, staff sangat helpful.",
+    image: testi3,
+  },
+];
