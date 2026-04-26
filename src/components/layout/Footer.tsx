@@ -1,0 +1,73 @@
+import { Link } from "react-router-dom";
+import { Mail, MapPin, Phone, Facebook, Instagram, Linkedin } from "lucide-react";
+
+export const Footer = () => {
+  return (
+    <footer className="border-t border-border/60 bg-primary text-primary-foreground">
+      <div className="container py-14">
+        <div className="grid gap-10 md:grid-cols-4">
+          <div className="md:col-span-1">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-accent">
+                <span className="font-display text-lg font-bold text-accent-foreground">S</span>
+              </div>
+              <span className="font-display text-lg font-bold">Synchrolab.my</span>
+            </div>
+            <p className="mt-4 text-sm leading-relaxed text-primary-foreground/70">
+              Platform tempahan kursus IT dan sewa bilik latihan rasmi oleh Synchronetwork Sdn Bhd.
+            </p>
+          </div>
+
+          <div>
+            <h4 className="font-display text-sm font-semibold uppercase tracking-wider">Pautan</h4>
+            <ul className="mt-4 space-y-2 text-sm text-primary-foreground/70">
+              <li><Link to="/kursus" className="hover:text-accent">Senarai Kursus</Link></li>
+              <li><Link to="/sewa-bilik" className="hover:text-accent">Sewa Bilik Latihan</Link></li>
+              <li><Link to="/semak-tempahan" className="hover:text-accent">Semak Tempahan</Link></li>
+              <li><Link to="/hubungi" className="hover:text-accent">Hubungi Kami</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-display text-sm font-semibold uppercase tracking-wider">Hubungi</h4>
+            <ul className="mt-4 space-y-3 text-sm text-primary-foreground/70">
+              <li className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <span>Synchronetwork Sdn Bhd, Cyberjaya, Selangor, Malaysia</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Mail className="h-4 w-4 shrink-0 text-accent" />
+                <a href="mailto:booking@synchrolab.my" className="hover:text-accent">booking@synchrolab.my</a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4 shrink-0 text-accent" />
+                <a href="tel:+60312345678" className="hover:text-accent">+603-1234 5678</a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-display text-sm font-semibold uppercase tracking-wider">Ikuti Kami</h4>
+            <div className="mt-4 flex gap-3">
+              {[Facebook, Instagram, Linkedin].map((Icon, i) => (
+                <a
+                  key={i}
+                  href="#"
+                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 transition-base hover:bg-accent"
+                  aria-label="Social"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-primary-foreground/60 md:flex-row">
+          <p>© {new Date().getFullYear()} Synchronetwork Sdn Bhd. Hak Cipta Terpelihara.</p>
+          <p>Dibangunkan dengan ❤ di Malaysia</p>
+        </div>
+      </div>
+    </footer>
+  );
+};
