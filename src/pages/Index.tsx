@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Award, CalendarCheck, CheckCircle2, GraduationCap, Quote, Shield, Sparkles, Users } from "lucide-react";
+import { ArrowRight, Award, CalendarCheck, CheckCircle2, GraduationCap, Quote, Shield, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CourseCard } from "@/components/CourseCard";
-import { courses } from "@/data/catalog";
+import { courses, testimonials } from "@/data/catalog";
 import heroImg from "@/assets/hero-training.jpg";
 
 const features = [
@@ -10,12 +10,6 @@ const features = [
   { icon: CalendarCheck, title: "Jadual Fleksibel", desc: "Pelbagai slot tarikh setiap bulan, atau kursus tertutup mengikut keperluan organisasi anda." },
   { icon: Shield, title: "HRD Corp Claimable", desc: "Sebahagian besar kursus boleh dituntut menerusi geran HRD Corp untuk syarikat yang layak." },
   { icon: GraduationCap, title: "Sijil Diiktiraf", desc: "Setiap peserta menerima sijil digital rasmi dan boleh dimuat turun terus dari sistem." },
-];
-
-const testimonials = [
-  { name: "Aizat Rahman", role: "IT Manager, Petronas Subsidiary", text: "Kursus Cybersecurity Synchrolab sangat praktikal. Trainer beri contoh kes sebenar di Malaysia. Highly recommended!" },
-  { name: "Nurin Sofea", role: "Data Analyst, CIMB", text: "Selepas kursus Power BI 3 hari, saya dah boleh bina dashboard sendiri untuk pasukan. Bahan kursus pun lengkap." },
-  { name: "Daniel Wong", role: "Founder, TechStartup MY", text: "Sewa auditorium untuk product launch — kemudahan top notch, harga berpatutan, staff sangat helpful." },
 ];
 
 const Index = () => {
@@ -127,9 +121,14 @@ const Index = () => {
                 <Quote className="absolute right-6 top-6 h-8 w-8 text-accent/15" />
                 <p className="text-sm leading-relaxed text-foreground/80">"{t.text}"</p>
                 <div className="mt-6 flex items-center gap-3 border-t border-border pt-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-accent font-display text-sm font-bold text-accent-foreground">
-                    {t.name.charAt(0)}
-                  </div>
+                  <img
+                    src={t.image}
+                    alt={t.name}
+                    loading="lazy"
+                    width={80}
+                    height={80}
+                    className="h-12 w-12 rounded-full object-cover ring-2 ring-accent/20"
+                  />
                   <div>
                     <p className="font-semibold text-foreground">{t.name}</p>
                     <p className="text-xs text-muted-foreground">{t.role}</p>

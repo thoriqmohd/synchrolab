@@ -7,7 +7,9 @@ import { cn } from "@/lib/utils";
 const links = [
   { to: "/", label: "Utama" },
   { to: "/kursus", label: "Kursus" },
+  { to: "/anjur-kursus", label: "Anjur Kursus" },
   { to: "/sewa-bilik", label: "Sewa Bilik" },
+  { to: "/senarai-tempat", label: "Senarai Tempat" },
   { to: "/semak-tempahan", label: "Semak Tempahan" },
   { to: "/hubungi", label: "Hubungi" },
 ];

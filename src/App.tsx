@@ -10,6 +10,8 @@ import CourseDetail from "./pages/CourseDetail.tsx";
 import Rooms from "./pages/Rooms.tsx";
 import CheckBooking from "./pages/CheckBooking.tsx";
 import Contact from "./pages/Contact.tsx";
+import HostCourse from "./pages/HostCourse.tsx";
+import ListVenue from "./pages/ListVenue.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -26,6 +28,8 @@ const App = () => (
             <Route path="/kursus" element={<Courses />} />
             <Route path="/kursus/:id" element={<CourseDetail />} />
             <Route path="/sewa-bilik" element={<Rooms />} />
+            <Route path="/anjur-kursus" element={<HostCourse />} />
+            <Route path="/senarai-tempat" element={<ListVenue />} />
             <Route path="/semak-tempahan" element={<CheckBooking />} />
             <Route path="/hubungi" element={<Contact />} />
           </Route>
