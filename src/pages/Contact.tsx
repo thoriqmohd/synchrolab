@@ -1,11 +1,41 @@
+import { useState } from "react";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+const schema = z.object({
+  name: z.string().trim().min(2).max(200),
+  email: z.string().trim().email().max(255),
+  subject: z.string().trim().max(300).optional().or(z.literal("")),
+  message: z.string().trim().min(5).max(5000),
+});
 
 const Contact = () => {
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = schema.safeParse(form);
+    if (!parsed.success) { toast.error(parsed.error.issues[0].message); return; }
+    setSubmitting(true);
+    const { error } = await supabase.from("contact_messages").insert({
+      name: parsed.data.name,
+      email: parsed.data.email,
+      subject: parsed.data.subject || null,
+      message: parsed.data.message,
+    });
+    setSubmitting(false);
+    if (error) { toast.error("Gagal hantar mesej", { description: error.message }); return; }
+    setForm({ name: "", email: "", subject: "", message: "" });
+    toast.success("Mesej dihantar! Kami akan balas dalam 1 hari bekerja.");
+  };
+
   return (
     <>
       <section className="bg-gradient-hero py-16">
@@ -35,17 +65,16 @@ const Contact = () => {
             ))}
           </div>
 
-          <form
-            onSubmit={(e) => { e.preventDefault(); toast.success("Mesej dihantar! Kami akan balas dalam 1 hari bekerja."); }}
-            className="space-y-4 rounded-2xl border border-border bg-card p-8 shadow-soft"
-          >
+          <form onSubmit={submit} className="space-y-4 rounded-2xl border border-border bg-card p-8 shadow-soft">
             <div className="grid gap-4 md:grid-cols-2">
-              <div><Label>Nama</Label><Input required className="mt-1.5" /></div>
-              <div><Label>E-mel</Label><Input required type="email" className="mt-1.5" /></div>
+              <div><Label>Nama</Label><Input required className="mt-1.5" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+              <div><Label>E-mel</Label><Input required type="email" className="mt-1.5" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
             </div>
-            <div><Label>Subjek</Label><Input required className="mt-1.5" /></div>
-            <div><Label>Mesej</Label><Textarea required rows={5} className="mt-1.5" /></div>
-            <Button type="submit" variant="accent" size="lg" className="w-full">Hantar Mesej</Button>
+            <div><Label>Subjek</Label><Input className="mt-1.5" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} /></div>
+            <div><Label>Mesej</Label><Textarea required rows={5} className="mt-1.5" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} /></div>
+            <Button type="submit" variant="accent" size="lg" className="w-full" disabled={submitting}>
+              {submitting ? "Menghantar..." : "Hantar Mesej"}
+            </Button>
           </form>
         </div>
       </section>

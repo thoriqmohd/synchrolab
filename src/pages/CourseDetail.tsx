@@ -1,14 +1,54 @@
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Award, CalendarDays, CheckCircle2, Clock, GraduationCap, Users } from "lucide-react";
-import { courses } from "@/data/catalog";
+import { ArrowLeft, Award, CalendarDays, CheckCircle2, Clock, GraduationCap, Loader2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { useCourseBySlug, type SlotRow } from "@/hooks/useCatalog";
+import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+const bookingSchema = z.object({
+  customer_name: z.string().trim().min(2, "Nama terlalu pendek").max(200),
+  email: z.string().trim().email("Emel tidak sah").max(255),
+  phone: z.string().trim().min(6, "Nombor telefon tidak sah").max(30),
+  company: z.string().trim().max(200).optional().or(z.literal("")),
+  num_pax: z.number().int().min(1).max(500),
+  notes: z.string().trim().max(2000).optional().or(z.literal("")),
+});
 
 const CourseDetail = () => {
   const { id } = useParams();
-  const course = courses.find((c) => c.id === id);
+  const { data, isLoading, error } = useCourseBySlug(id);
 
-  if (!course) {
+  const [selectedSlot, setSelectedSlot] = useState<SlotRow | null>(null);
+  const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [form, setForm] = useState({ customer_name: "", email: "", phone: "", company: "", num_pax: 1, notes: "" });
+
+  const course = data?.course;
+  const slots = data?.slots ?? [];
+
+  const total = useMemo(() => {
+    if (!course) return 0;
+    const unit = course.group_price && form.num_pax >= 5 ? course.group_price : course.price;
+    return unit * form.num_pax;
+  }, [course, form.num_pax]);
+
+  if (isLoading) {
+    return (
+      <div className="container flex justify-center py-32 text-muted-foreground">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !course) {
     return (
       <div className="container py-32 text-center">
         <h1 className="font-display text-2xl font-bold">Kursus tidak dijumpai</h1>
@@ -16,6 +56,52 @@ const CourseDetail = () => {
       </div>
     );
   }
+
+  const openBooking = (slot?: SlotRow) => {
+    if (slot) setSelectedSlot(slot);
+    else if (slots.length > 0) setSelectedSlot(slots.find((s) => s.seats_left > 0) ?? slots[0]);
+    setSuccess(null);
+    setOpen(true);
+  };
+
+  const submitBooking = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSlot) {
+      toast.error("Sila pilih slot tarikh.");
+      return;
+    }
+    const parsed = bookingSchema.safeParse(form);
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0].message);
+      return;
+    }
+    setSubmitting(true);
+    const { data: user } = await supabase.auth.getUser();
+    const { data: inserted, error: insertErr } = await supabase
+      .from("bookings")
+      .insert({
+        type: "course",
+        course_id: course.id,
+        slot_id: selectedSlot.id,
+        customer_name: parsed.data.customer_name,
+        email: parsed.data.email,
+        phone: parsed.data.phone,
+        company: parsed.data.company || null,
+        num_pax: parsed.data.num_pax,
+        total_amount: total,
+        notes: parsed.data.notes || null,
+        user_id: user.user?.id ?? null,
+      })
+      .select("ref_no")
+      .single();
+    setSubmitting(false);
+    if (insertErr) {
+      toast.error("Gagal menempah", { description: insertErr.message });
+      return;
+    }
+    setSuccess(inserted.ref_no);
+    setForm({ customer_name: "", email: "", phone: "", company: "", num_pax: 1, notes: "" });
+  };
 
   return (
     <>
@@ -28,11 +114,11 @@ const CourseDetail = () => {
           <h1 className="mt-4 max-w-3xl font-display text-3xl font-extrabold text-white md:text-4xl lg:text-5xl">
             {course.title}
           </h1>
-          <p className="mt-4 max-w-2xl text-white/80">{course.shortDesc}</p>
+          <p className="mt-4 max-w-2xl text-white/80">{course.short_desc}</p>
 
           <div className="mt-6 flex flex-wrap gap-x-8 gap-y-3 text-sm text-white/85">
             <span className="inline-flex items-center gap-2"><Clock className="h-4 w-4 text-accent" /> {course.duration}</span>
-            <span className="inline-flex items-center gap-2"><Users className="h-4 w-4 text-accent" /> {course.facilitator}</span>
+            {course.facilitator && <span className="inline-flex items-center gap-2"><Users className="h-4 w-4 text-accent" /> {course.facilitator}</span>}
             <span className="inline-flex items-center gap-2"><Award className="h-4 w-4 text-accent" /> Sijil disediakan</span>
           </div>
         </div>
@@ -56,30 +142,36 @@ const CourseDetail = () => {
             <div className="grid gap-6 md:grid-cols-2">
               <div className="rounded-2xl border border-border bg-card p-6">
                 <h3 className="font-display text-lg font-bold">Kelayakan Peserta</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{course.prerequisites}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{course.prerequisites ?? "Tiada"}</p>
               </div>
               <div className="rounded-2xl border border-border bg-card p-6">
                 <h3 className="font-display text-lg font-bold">Sijil yang Diterima</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{course.certificate}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{course.certificate ?? "Sijil Synchrolab"}</p>
               </div>
             </div>
 
             <div>
               <h2 className="font-display text-2xl font-bold text-foreground">Slot Tarikh Tersedia</h2>
               <div className="mt-4 grid gap-3">
-                {course.slots.map((s) => (
-                  <div key={s.date} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
+                {slots.length === 0 && <p className="text-sm text-muted-foreground">Belum ada slot tersedia.</p>}
+                {slots.map((s) => (
+                  <div key={s.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-accent-soft">
                         <CalendarDays className="h-5 w-5 text-accent" />
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground">{s.date}</p>
-                        <p className="text-xs text-muted-foreground">{s.time} • {s.seats > 0 ? `${s.seats} tempat tinggal` : "Penuh"}</p>
+                        <p className="font-semibold text-foreground">{s.date_label}</p>
+                        <p className="text-xs text-muted-foreground">{s.time_label} • {s.seats_left > 0 ? `${s.seats_left} tempat tinggal` : "Penuh"}</p>
                       </div>
                     </div>
-                    <Button size="sm" variant={s.seats > 0 ? "accent" : "outline"} disabled={s.seats === 0}>
-                      {s.seats > 0 ? "Pilih Slot" : "Penuh"}
+                    <Button
+                      size="sm"
+                      variant={s.seats_left > 0 ? "accent" : "outline"}
+                      disabled={s.seats_left === 0}
+                      onClick={() => openBooking(s)}
+                    >
+                      {s.seats_left > 0 ? "Pilih Slot" : "Penuh"}
                     </Button>
                   </div>
                 ))}
@@ -95,17 +187,23 @@ const CourseDetail = () => {
                 RM{course.price.toLocaleString()}
                 <span className="text-sm font-normal text-muted-foreground"> /peserta</span>
               </p>
-              {course.groupPrice && (
+              {course.group_price && (
                 <p className="mt-1 text-sm text-success">
-                  RM{course.groupPrice.toLocaleString()}/pax untuk kumpulan 5+ peserta
+                  RM{course.group_price.toLocaleString()}/pax untuk kumpulan 5+ peserta
                 </p>
               )}
 
-              <Button variant="accent" size="lg" className="mt-6 w-full">
+              <Button
+                variant="accent"
+                size="lg"
+                className="mt-6 w-full"
+                disabled={slots.every((s) => s.seats_left === 0)}
+                onClick={() => openBooking()}
+              >
                 <GraduationCap className="h-4 w-4" /> Daftar Sekarang
               </Button>
-              <Button variant="outline" size="lg" className="mt-2 w-full">
-                Tanya Pertanyaan
+              <Button asChild variant="outline" size="lg" className="mt-2 w-full">
+                <Link to="/hubungi">Tanya Pertanyaan</Link>
               </Button>
 
               <ul className="mt-6 space-y-2 border-t border-border pt-4 text-xs text-muted-foreground">
@@ -117,6 +215,82 @@ const CourseDetail = () => {
           </aside>
         </div>
       </section>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Tempah Kursus</DialogTitle>
+            <DialogDescription>{course.title}</DialogDescription>
+          </DialogHeader>
+
+          {success ? (
+            <div className="space-y-4 py-2">
+              <div className="rounded-xl border border-success/30 bg-success/5 p-5 text-center">
+                <CheckCircle2 className="mx-auto h-10 w-10 text-success" />
+                <p className="mt-3 font-display text-lg font-bold text-foreground">Tempahan diterima!</p>
+                <p className="mt-1 text-sm text-muted-foreground">Nombor rujukan anda:</p>
+                <p className="mt-2 font-display text-xl font-bold text-primary">{success}</p>
+                <p className="mt-3 text-xs text-muted-foreground">Semak status di halaman "Semak Tempahan" menggunakan rujukan dan emel anda.</p>
+              </div>
+              <Button onClick={() => setOpen(false)} className="w-full" variant="accent">Tutup</Button>
+            </div>
+          ) : (
+            <form onSubmit={submitBooking} className="space-y-4">
+              <div>
+                <Label>Slot tarikh</Label>
+                <select
+                  required
+                  value={selectedSlot?.id ?? ""}
+                  onChange={(e) => setSelectedSlot(slots.find((s) => s.id === e.target.value) ?? null)}
+                  className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  {slots.filter((s) => s.seats_left > 0).map((s) => (
+                    <option key={s.id} value={s.id}>{s.date_label} ({s.seats_left} tempat)</option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Nama penuh *</Label>
+                  <Input required className="mt-1.5" value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Bil. peserta *</Label>
+                  <Input required type="number" min={1} max={selectedSlot?.seats_left ?? 50} className="mt-1.5" value={form.num_pax} onChange={(e) => setForm({ ...form, num_pax: Number(e.target.value) })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>E-mel *</Label>
+                  <Input required type="email" className="mt-1.5" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Telefon *</Label>
+                  <Input required className="mt-1.5" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                </div>
+              </div>
+              <div>
+                <Label>Syarikat (pilihan)</Label>
+                <Input className="mt-1.5" value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
+              </div>
+              <div>
+                <Label>Nota tambahan</Label>
+                <Textarea rows={2} className="mt-1.5" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/40 px-4 py-3">
+                <span className="text-sm text-muted-foreground">Jumlah</span>
+                <span className="font-display text-xl font-bold text-primary">RM{total.toLocaleString()}</span>
+              </div>
+
+              <Button type="submit" variant="accent" size="lg" className="w-full" disabled={submitting}>
+                {submitting ? "Memproses..." : "Hantar Tempahan"}
+              </Button>
+              <p className="text-center text-xs text-muted-foreground">Pasukan kami akan hubungi anda untuk pengesahan & arahan bayaran.</p>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
