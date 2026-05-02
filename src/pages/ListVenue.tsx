@@ -36,7 +36,7 @@ const ListVenue = () => {
             Senaraikan tempat latihan anda
           </h1>
           <p className="mt-4 max-w-2xl text-white/80">
-            Ada bilik latihan, lab IT atau auditorium yang kosong? Senaraikan dengan Synchrolab dan jana pendapatan tambahan dengan menyewa kepada pengguna kami.
+            Ada bilik latihan, lab IT atau auditorium yang kosong? Senaraikan dengan SynchroLab dan jana pendapatan tambahan dengan menyewa kepada pengguna kami.
           </p>
         </div>
       </section>

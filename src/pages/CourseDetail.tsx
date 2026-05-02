@@ -146,7 +146,7 @@ const CourseDetail = () => {
               </div>
               <div className="rounded-2xl border border-border bg-card p-6">
                 <h3 className="font-display text-lg font-bold">Sijil yang Diterima</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{course.certificate ?? "Sijil Synchrolab"}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{course.certificate ?? "Sijil SynchroLab"}</p>
               </div>
             </div>
 

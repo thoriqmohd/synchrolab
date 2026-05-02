@@ -43,7 +43,7 @@ export const testimonials: Testimonial[] = [
   {
     name: "Aizat Rahman",
     role: "IT Manager, Petronas Subsidiary",
-    text: "Kursus Cybersecurity Synchrolab sangat praktikal. Trainer beri contoh kes sebenar di Malaysia. Highly recommended!",
+    text: "Kursus Cybersecurity SynchroLab sangat praktikal. Trainer beri contoh kes sebenar di Malaysia. Highly recommended!",
     image: testi1,
   },
   {

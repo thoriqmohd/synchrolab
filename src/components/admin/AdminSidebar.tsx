@@ -43,7 +43,7 @@ export function AdminSidebar() {
       <SidebarHeader className="px-4 py-4">
         {!collapsed && (
           <div>
-            <p className="font-display text-lg font-bold text-foreground">Synchrolab</p>
+            <p className="font-display text-lg font-bold text-foreground">SynchroLab</p>
             <p className="text-xs text-muted-foreground">Admin Panel</p>
           </div>
         )}

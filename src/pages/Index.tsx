@@ -86,7 +86,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Why Synchrolab */}
+      {/* Why SynchroLab */}
       <section className="bg-gradient-soft py-20">
         <div className="container">
           <div className="mx-auto max-w-2xl text-center">

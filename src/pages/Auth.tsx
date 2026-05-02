@@ -72,7 +72,7 @@ const Auth = () => {
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {mode === "login"
-            ? "Akses panel pengurusan Synchrolab."
+            ? "Akses panel pengurusan SynchroLab."
             : "Cipta akaun baru untuk akses panel."}
         </p>
 
