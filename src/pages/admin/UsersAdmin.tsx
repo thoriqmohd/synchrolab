@@ -283,9 +283,81 @@ const UsersAdmin = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {editing && (
+        <EditUserDialog
+          user={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => qc.invalidateQueries({ queryKey: ["admin", "users"] })}
+        />
+      )}
     </div>
   );
 };
+
+function EditUserDialog({ user, onClose, onSaved }: { user: AdminUser; onClose: () => void; onSaved: () => void }) {
+  const [fullName, setFullName] = useState(user.full_name ?? "");
+  const [phone, setPhone] = useState(user.phone ?? "");
+  const [email, setEmail] = useState(user.email ?? "");
+  const [password, setPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    const payload: Record<string, unknown> = {
+      user_id: user.id,
+      full_name: fullName,
+      phone,
+    };
+    if (email && email !== user.email) payload.email = email;
+    if (password) payload.password = password;
+    const { data, error } = await supabase.functions.invoke("admin-update-user", { body: payload });
+    setSaving(false);
+    if (error || data?.error) {
+      toast.error("Gagal", { description: data?.error ?? error?.message });
+      return;
+    }
+    toast.success("Disimpan");
+    onSaved();
+    onClose();
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Pengguna</DialogTitle>
+          <DialogDescription>Kemas kini profil, emel atau set kata laluan baru.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4">
+          <div>
+            <Label>Nama penuh</Label>
+            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+          </div>
+          <div>
+            <Label>Telefon</Label>
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+          </div>
+          <div>
+            <Label>Emel</Label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div>
+            <Label>Kata laluan baru (kosongkan jika tidak mahu tukar)</Label>
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 6 aksara" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Batal</Button>
+          <Button variant="accent" onClick={save} disabled={saving}>
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            Simpan
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const Detail = ({ label, value }: { label: string; value: string }) => (
   <div>
