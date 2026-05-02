@@ -34,6 +34,7 @@ type Course = {
   certificate: string | null;
   image_url: string | null;
   is_active: boolean;
+  is_featured: boolean;
 };
 
 type Slot = {
@@ -61,6 +62,7 @@ const empty: Omit<Course, "id"> = {
   certificate: "",
   image_url: "",
   is_active: true,
+  is_featured: false,
 };
 
 export default function CoursesAdmin() {
@@ -119,6 +121,7 @@ export default function CoursesAdmin() {
                 <TableHead>Harga</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Aktif</TableHead>
+                <TableHead>Pilihan</TableHead>
                 <TableHead className="text-right">Tindakan</TableHead>
               </TableRow>
             </TableHeader>
@@ -138,6 +141,26 @@ export default function CoursesAdmin() {
                   <TableCell>RM{Number(c.price).toLocaleString()}</TableCell>
                   <TableCell><Badge>{c.status}</Badge></TableCell>
                   <TableCell>{c.is_active ? "✅" : "—"}</TableCell>
+                  <TableCell>
+                    <input
+                      type="checkbox"
+                      checked={c.is_featured}
+                      title="Tick untuk paparkan di 'Kursus popular bulan ini'"
+                      onChange={async (e) => {
+                        const { error } = await supabase
+                          .from("courses")
+                          .update({ is_featured: e.target.checked })
+                          .eq("id", c.id);
+                        if (error) toast.error("Gagal", { description: error.message });
+                        else {
+                          toast.success(e.target.checked ? "Dipilih" : "Dibuang dari pilihan");
+                          qc.invalidateQueries({ queryKey: ["admin-courses"] });
+                          qc.invalidateQueries({ queryKey: ["courses"] });
+                          qc.invalidateQueries({ queryKey: ["featured-courses"] });
+                        }
+                      }}
+                    />
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <Button size="sm" variant="ghost" onClick={() => setSlotsFor(c)} title="Slot tarikh">
@@ -154,7 +177,7 @@ export default function CoursesAdmin() {
                 </TableRow>
               ))}
               {courses.length === 0 && (
-                <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Belum ada kursus.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="py-10 text-center text-muted-foreground">Belum ada kursus.</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
@@ -237,6 +260,7 @@ function CourseForm({ initial, isNew, onClose, onSaved }: { initial: Course; isN
       certificate: form.certificate || null,
       image_url: form.image_url || null,
       is_active: form.is_active,
+      is_featured: form.is_featured,
     };
     const { error } = isNew
       ? await supabase.from("courses").insert(payload)
@@ -375,10 +399,16 @@ function CourseForm({ initial, isNew, onClose, onSaved }: { initial: Course; isN
             <Input value={form.certificate ?? ""} onChange={(e) => setForm({ ...form, certificate: e.target.value })} />
           </div>
 
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
-            Aktif (paparkan di laman awam)
-          </label>
+          <div className="flex flex-wrap gap-6">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
+              Aktif (paparkan di laman awam)
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} />
+              Highlight di "Kursus popular bulan ini"
+            </label>
+          </div>
         </div>
 
         <DialogFooter>

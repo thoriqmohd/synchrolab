@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Shield, ShieldOff, Eye } from "lucide-react";
+import { Shield, ShieldOff, Eye, Pencil, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,9 +18,11 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 type AdminUser = {
@@ -52,6 +54,7 @@ const UsersAdmin = () => {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<AdminUser | null>(null);
+  const [editing, setEditing] = useState<AdminUser | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -187,8 +190,11 @@ const UsersAdmin = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => setSelected(u)}>
+                      <Button variant="ghost" size="sm" onClick={() => setSelected(u)} title="Lihat">
                         <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setEditing(u)} title="Edit profil & kata laluan">
+                        <Pencil className="h-4 w-4" />
                       </Button>
                       {isAdmin ? (
                         <Button
@@ -277,9 +283,81 @@ const UsersAdmin = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {editing && (
+        <EditUserDialog
+          user={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => qc.invalidateQueries({ queryKey: ["admin", "users"] })}
+        />
+      )}
     </div>
   );
 };
+
+function EditUserDialog({ user, onClose, onSaved }: { user: AdminUser; onClose: () => void; onSaved: () => void }) {
+  const [fullName, setFullName] = useState(user.full_name ?? "");
+  const [phone, setPhone] = useState(user.phone ?? "");
+  const [email, setEmail] = useState(user.email ?? "");
+  const [password, setPassword] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    setSaving(true);
+    const payload: Record<string, unknown> = {
+      user_id: user.id,
+      full_name: fullName,
+      phone,
+    };
+    if (email && email !== user.email) payload.email = email;
+    if (password) payload.password = password;
+    const { data, error } = await supabase.functions.invoke("admin-update-user", { body: payload });
+    setSaving(false);
+    if (error || data?.error) {
+      toast.error("Gagal", { description: data?.error ?? error?.message });
+      return;
+    }
+    toast.success("Disimpan");
+    onSaved();
+    onClose();
+  };
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Pengguna</DialogTitle>
+          <DialogDescription>Kemas kini profil, emel atau set kata laluan baru.</DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4">
+          <div>
+            <Label>Nama penuh</Label>
+            <Input value={fullName} onChange={(e) => setFullName(e.target.value)} />
+          </div>
+          <div>
+            <Label>Telefon</Label>
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+          </div>
+          <div>
+            <Label>Emel</Label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div>
+            <Label>Kata laluan baru (kosongkan jika tidak mahu tukar)</Label>
+            <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Min 6 aksara" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Batal</Button>
+          <Button variant="accent" onClick={save} disabled={saving}>
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            Simpan
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const Detail = ({ label, value }: { label: string; value: string }) => (
   <div>

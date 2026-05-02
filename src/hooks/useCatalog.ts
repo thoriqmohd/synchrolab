@@ -17,6 +17,7 @@ export type CourseRow = {
   facilitator: string | null;
   certificate: string | null;
   image: string;
+  is_featured: boolean;
 };
 
 export type SlotRow = {
@@ -56,6 +57,7 @@ const mapCourse = (r: any): CourseRow => ({
   facilitator: r.facilitator,
   certificate: r.certificate,
   image: r.image_url || getCourseImage(r.slug),
+  is_featured: !!r.is_featured,
 });
 
 const mapRoom = (r: any): RoomRow => ({
@@ -115,6 +117,21 @@ export const useCourseBySlug = (slug: string | undefined) =>
     },
   });
 
+export const useFeaturedCourses = () =>
+  useQuery({
+    queryKey: ["featured-courses"],
+    queryFn: async (): Promise<CourseRow[]> => {
+      const { data, error } = await supabase
+        .from("courses")
+        .select("*")
+        .eq("is_active", true)
+        .eq("is_featured", true)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []).map(mapCourse);
+    },
+  });
+
 export const useRooms = () =>
   useQuery({
     queryKey: ["rooms"],
@@ -126,5 +143,27 @@ export const useRooms = () =>
         .order("created_at", { ascending: true });
       if (error) throw error;
       return (data ?? []).map(mapRoom);
+    },
+  });
+
+export type RoomAddon = {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  sort_order: number;
+};
+
+export const useRoomAddons = () =>
+  useQuery({
+    queryKey: ["room-addons"],
+    queryFn: async (): Promise<RoomAddon[]> => {
+      const { data, error } = await supabase
+        .from("room_addons")
+        .select("id, name, description, price, sort_order")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []).map((a: any) => ({ ...a, price: Number(a.price) }));
     },
   });

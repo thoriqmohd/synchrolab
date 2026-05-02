@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { useRooms } from "@/hooks/useCatalog";
+import { useRooms, useRoomAddons } from "@/hooks/useCatalog";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
@@ -21,7 +22,9 @@ const schema = z.object({
 
 const Rooms = () => {
   const { data: rooms = [], isLoading } = useRooms();
+  const { data: addons = [] } = useRoomAddons();
   const [form, setForm] = useState({ room_id: "", date: "", time: "", duration: 4, customer_name: "", email: "", phone: "", notes: "" });
+  const [selectedAddons, setSelectedAddons] = useState<Record<string, number>>({}); // id -> qty
   const [submitting, setSubmitting] = useState(false);
   const [refNo, setRefNo] = useState<string | null>(null);
 
@@ -31,11 +34,17 @@ const Rooms = () => {
 
   const selectedRoom = useMemo(() => rooms.find((r) => r.id === form.room_id), [rooms, form.room_id]);
 
-  const total = useMemo(() => {
+  const baseTotal = useMemo(() => {
     if (!selectedRoom) return 0;
     if (form.duration >= 8) return selectedRoom.daily_rate;
     return selectedRoom.hourly_rate * form.duration;
   }, [selectedRoom, form.duration]);
+
+  const addonsTotal = useMemo(() => {
+    return addons.reduce((sum, a) => sum + (selectedAddons[a.id] || 0) * a.price, 0);
+  }, [addons, selectedAddons]);
+
+  const total = baseTotal + addonsTotal;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +67,7 @@ const Rooms = () => {
         phone: parsed.data.phone,
         num_pax: 1,
         total_amount: total,
-        notes: `Masa: ${form.time || "-"} • Tempoh: ${parsed.data.duration} jam${parsed.data.notes ? ` • ${parsed.data.notes}` : ""}`,
+        notes: buildNotes(),
         user_id: user.user?.id ?? null,
       })
       .select("ref_no")
@@ -70,7 +79,21 @@ const Rooms = () => {
     }
     setRefNo(data.ref_no);
     setForm({ room_id: rooms[0]?.id ?? "", date: "", time: "", duration: 4, customer_name: "", email: "", phone: "", notes: "" });
+    setSelectedAddons({});
     toast.success("Tempahan diterima!", { description: `Rujukan: ${data.ref_no}` });
+  };
+
+  const buildNotes = () => {
+    const chosen = addons
+      .filter((a) => (selectedAddons[a.id] || 0) > 0)
+      .map((a) => `${a.name} x${selectedAddons[a.id]} (RM${(selectedAddons[a.id] * a.price).toFixed(2)})`);
+    const parts: string[] = [
+      `Masa: ${form.time || "-"}`,
+      `Tempoh: ${form.duration} jam`,
+    ];
+    if (chosen.length) parts.push(`Add-on: ${chosen.join(", ")}`);
+    if (form.notes) parts.push(form.notes);
+    return parts.join(" • ");
   };
 
   return (
@@ -168,10 +191,48 @@ const Rooms = () => {
             </div>
             <div className="flex items-end">
               <div className="w-full rounded-lg border border-border bg-secondary/40 px-4 py-2.5">
-                <p className="text-xs text-muted-foreground">Anggaran jumlah</p>
+                <p className="text-xs text-muted-foreground">Anggaran jumlah {addonsTotal > 0 && <span className="text-foreground/60">(termasuk add-on RM{addonsTotal.toFixed(2)})</span>}</p>
                 <p className="font-display text-lg font-bold text-primary">RM{total.toLocaleString()}</p>
               </div>
             </div>
+
+            {addons.length > 0 && (
+              <div className="md:col-span-2">
+                <Label>Keperluan khas (add-on)</Label>
+                <p className="mt-1 text-xs text-muted-foreground">Pilih item tambahan — harga akan ditambah ke jumlah tempahan.</p>
+                <div className="mt-3 grid gap-2 rounded-lg border border-border bg-background/50 p-3 sm:grid-cols-2">
+                  {addons.map((a) => {
+                    const qty = selectedAddons[a.id] || 0;
+                    return (
+                      <div key={a.id} className="flex items-start gap-3 rounded-md border border-border bg-card px-3 py-2">
+                        <Checkbox
+                          checked={qty > 0}
+                          onCheckedChange={(v) =>
+                            setSelectedAddons((s) => ({ ...s, [a.id]: v ? Math.max(1, qty) : 0 }))
+                          }
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium leading-tight">{a.name}</p>
+                          {a.description && <p className="text-xs text-muted-foreground">{a.description}</p>}
+                          <p className="mt-0.5 text-xs text-primary font-semibold">RM{a.price.toFixed(2)}</p>
+                        </div>
+                        {qty > 0 && (
+                          <Input
+                            type="number"
+                            min={1}
+                            value={qty}
+                            onChange={(e) => setSelectedAddons((s) => ({ ...s, [a.id]: Math.max(1, Number(e.target.value)) }))}
+                            className="h-8 w-16"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div>
               <Label>Nama penuh</Label>
               <Input required value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} className="mt-1.5" />
@@ -185,8 +246,8 @@ const Rooms = () => {
               <Input required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1.5" />
             </div>
             <div className="md:col-span-2">
-              <Label>Keperluan khas</Label>
-              <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="mt-1.5" placeholder="Cth: setup teater, perlu mikrofon tambahan, jamuan minum..." />
+              <Label>Nota tambahan</Label>
+              <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="mt-1.5" placeholder="Cth: keperluan khas lain, susunan kerusi..." />
             </div>
             <Button type="submit" variant="accent" size="lg" className="md:col-span-2" disabled={submitting}>
               {submitting ? "Memproses..." : "Hantar Permohonan Tempahan"}
