@@ -54,6 +54,7 @@ const UsersAdmin = () => {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<AdminUser | null>(null);
+  const [editing, setEditing] = useState<AdminUser | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
