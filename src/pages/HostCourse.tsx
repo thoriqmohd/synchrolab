@@ -93,7 +93,7 @@ const HostCourse = () => {
         <div className="grid gap-10 lg:grid-cols-[1fr_480px]">
           <div className="space-y-8">
             <div>
-              <h2 className="font-display text-2xl font-bold text-foreground">Kenapa anjur kursus dengan Synchrolab?</h2>
+              <h2 className="font-display text-2xl font-bold text-foreground">Kenapa anjur kursus dengan SynchroLab?</h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 {benefits.map((b) => (
                   <div key={b.title} className="rounded-2xl border border-border bg-card p-5 shadow-soft">

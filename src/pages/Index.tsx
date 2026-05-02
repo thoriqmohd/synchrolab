@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CourseCard } from "@/components/CourseCard";
 import { testimonials } from "@/data/catalog";
 import { useCourses } from "@/hooks/useCatalog";
-import heroImg from "@/assets/hero-training.jpg";
+import heroImg from "@/assets/hero-classroom.jpg";
 
 const features = [
   { icon: Award, title: "Pengajar Bertauliah", desc: "Trainer industri dengan pensijilan antarabangsa Microsoft, Cisco, AWS dan lebih lagi." },
@@ -39,7 +39,7 @@ const Index = () => {
               </span>
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/80">
-              Synchrolab.my menawarkan kursus IT bertauliah dan kemudahan bilik latihan moden untuk individu, pasukan dan organisasi di seluruh Malaysia.
+              SynchroLab.my menawarkan kursus IT bertauliah dan kemudahan bilik latihan moden untuk individu, pasukan dan organisasi di seluruh Malaysia.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild variant="hero" size="xl">
@@ -86,11 +86,11 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Why Synchrolab */}
+      {/* Why SynchroLab */}
       <section className="bg-gradient-soft py-20">
         <div className="container">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-wider text-accent">Kenapa Synchrolab</p>
+            <p className="text-sm font-semibold uppercase tracking-wider text-accent">Kenapa SynchroLab</p>
             <h2 className="mt-2 font-display text-3xl font-bold text-foreground md:text-4xl">
               Pilihan profesional Malaysia untuk latihan IT
             </h2>
