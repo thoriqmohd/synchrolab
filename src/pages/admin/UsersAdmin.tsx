@@ -190,8 +190,11 @@ const UsersAdmin = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="sm" onClick={() => setSelected(u)}>
+                      <Button variant="ghost" size="sm" onClick={() => setSelected(u)} title="Lihat">
                         <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setEditing(u)} title="Edit profil & kata laluan">
+                        <Pencil className="h-4 w-4" />
                       </Button>
                       {isAdmin ? (
                         <Button
