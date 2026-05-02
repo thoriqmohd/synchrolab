@@ -67,7 +67,7 @@ const Rooms = () => {
         phone: parsed.data.phone,
         num_pax: 1,
         total_amount: total,
-        notes: `Masa: ${form.time || "-"} • Tempoh: ${parsed.data.duration} jam${parsed.data.notes ? ` • ${parsed.data.notes}` : ""}`,
+        notes: buildNotes(),
         user_id: user.user?.id ?? null,
       })
       .select("ref_no")
@@ -79,7 +79,21 @@ const Rooms = () => {
     }
     setRefNo(data.ref_no);
     setForm({ room_id: rooms[0]?.id ?? "", date: "", time: "", duration: 4, customer_name: "", email: "", phone: "", notes: "" });
+    setSelectedAddons({});
     toast.success("Tempahan diterima!", { description: `Rujukan: ${data.ref_no}` });
+  };
+
+  const buildNotes = () => {
+    const chosen = addons
+      .filter((a) => (selectedAddons[a.id] || 0) > 0)
+      .map((a) => `${a.name} x${selectedAddons[a.id]} (RM${(selectedAddons[a.id] * a.price).toFixed(2)})`);
+    const parts: string[] = [
+      `Masa: ${form.time || "-"}`,
+      `Tempoh: ${form.duration} jam`,
+    ];
+    if (chosen.length) parts.push(`Add-on: ${chosen.join(", ")}`);
+    if (form.notes) parts.push(form.notes);
+    return parts.join(" • ");
   };
 
   return (
