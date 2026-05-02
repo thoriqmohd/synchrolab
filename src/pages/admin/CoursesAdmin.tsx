@@ -34,6 +34,7 @@ type Course = {
   certificate: string | null;
   image_url: string | null;
   is_active: boolean;
+  is_featured: boolean;
 };
 
 type Slot = {
@@ -61,6 +62,7 @@ const empty: Omit<Course, "id"> = {
   certificate: "",
   image_url: "",
   is_active: true,
+  is_featured: false,
 };
 
 export default function CoursesAdmin() {
