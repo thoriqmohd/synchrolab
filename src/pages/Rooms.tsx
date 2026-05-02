@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { useRooms } from "@/hooks/useCatalog";
+import { useRooms, useRoomAddons } from "@/hooks/useCatalog";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
@@ -21,7 +22,9 @@ const schema = z.object({
 
 const Rooms = () => {
   const { data: rooms = [], isLoading } = useRooms();
+  const { data: addons = [] } = useRoomAddons();
   const [form, setForm] = useState({ room_id: "", date: "", time: "", duration: 4, customer_name: "", email: "", phone: "", notes: "" });
+  const [selectedAddons, setSelectedAddons] = useState<Record<string, number>>({}); // id -> qty
   const [submitting, setSubmitting] = useState(false);
   const [refNo, setRefNo] = useState<string | null>(null);
 
@@ -31,11 +34,17 @@ const Rooms = () => {
 
   const selectedRoom = useMemo(() => rooms.find((r) => r.id === form.room_id), [rooms, form.room_id]);
 
-  const total = useMemo(() => {
+  const baseTotal = useMemo(() => {
     if (!selectedRoom) return 0;
     if (form.duration >= 8) return selectedRoom.daily_rate;
     return selectedRoom.hourly_rate * form.duration;
   }, [selectedRoom, form.duration]);
+
+  const addonsTotal = useMemo(() => {
+    return addons.reduce((sum, a) => sum + (selectedAddons[a.id] || 0) * a.price, 0);
+  }, [addons, selectedAddons]);
+
+  const total = baseTotal + addonsTotal;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
