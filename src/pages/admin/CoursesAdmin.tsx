@@ -399,10 +399,16 @@ function CourseForm({ initial, isNew, onClose, onSaved }: { initial: Course; isN
             <Input value={form.certificate ?? ""} onChange={(e) => setForm({ ...form, certificate: e.target.value })} />
           </div>
 
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
-            Aktif (paparkan di laman awam)
-          </label>
+          <div className="flex flex-wrap gap-6">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={form.is_active} onChange={(e) => setForm({ ...form, is_active: e.target.checked })} />
+              Aktif (paparkan di laman awam)
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={form.is_featured} onChange={(e) => setForm({ ...form, is_featured: e.target.checked })} />
+              Highlight di "Kursus popular bulan ini"
+            </label>
+          </div>
         </div>
 
         <DialogFooter>
