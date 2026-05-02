@@ -3,7 +3,7 @@ import { ArrowRight, Award, CalendarCheck, CheckCircle2, GraduationCap, Loader2,
 import { Button } from "@/components/ui/button";
 import { CourseCard } from "@/components/CourseCard";
 import { testimonials } from "@/data/catalog";
-import { useCourses } from "@/hooks/useCatalog";
+import { useCourses, useFeaturedCourses } from "@/hooks/useCatalog";
 import heroImg from "@/assets/hero-classroom.jpg";
 
 const features = [
@@ -15,7 +15,8 @@ const features = [
 
 const Index = () => {
   const { data: courses = [], isLoading } = useCourses();
-  const featured = courses.slice(0, 3);
+  const { data: featuredFromAdmin = [] } = useFeaturedCourses();
+  const featured = (featuredFromAdmin.length > 0 ? featuredFromAdmin : courses).slice(0, 4);
 
   return (
     <>
@@ -79,7 +80,7 @@ const Index = () => {
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : (
-            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {featured.map((c) => <CourseCard key={c.id} course={c} />)}
             </div>
           )}
