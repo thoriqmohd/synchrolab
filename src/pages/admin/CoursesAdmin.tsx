@@ -260,6 +260,7 @@ function CourseForm({ initial, isNew, onClose, onSaved }: { initial: Course; isN
       certificate: form.certificate || null,
       image_url: form.image_url || null,
       is_active: form.is_active,
+      is_featured: form.is_featured,
     };
     const { error } = isNew
       ? await supabase.from("courses").insert(payload)
