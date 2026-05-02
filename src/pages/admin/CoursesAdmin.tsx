@@ -121,6 +121,7 @@ export default function CoursesAdmin() {
                 <TableHead>Harga</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Aktif</TableHead>
+                <TableHead>Pilihan</TableHead>
                 <TableHead className="text-right">Tindakan</TableHead>
               </TableRow>
             </TableHeader>
@@ -140,6 +141,26 @@ export default function CoursesAdmin() {
                   <TableCell>RM{Number(c.price).toLocaleString()}</TableCell>
                   <TableCell><Badge>{c.status}</Badge></TableCell>
                   <TableCell>{c.is_active ? "✅" : "—"}</TableCell>
+                  <TableCell>
+                    <input
+                      type="checkbox"
+                      checked={c.is_featured}
+                      title="Tick untuk paparkan di 'Kursus popular bulan ini'"
+                      onChange={async (e) => {
+                        const { error } = await supabase
+                          .from("courses")
+                          .update({ is_featured: e.target.checked })
+                          .eq("id", c.id);
+                        if (error) toast.error("Gagal", { description: error.message });
+                        else {
+                          toast.success(e.target.checked ? "Dipilih" : "Dibuang dari pilihan");
+                          qc.invalidateQueries({ queryKey: ["admin-courses"] });
+                          qc.invalidateQueries({ queryKey: ["courses"] });
+                          qc.invalidateQueries({ queryKey: ["featured-courses"] });
+                        }
+                      }}
+                    />
+                  </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <Button size="sm" variant="ghost" onClick={() => setSlotsFor(c)} title="Slot tarikh">
@@ -156,7 +177,7 @@ export default function CoursesAdmin() {
                 </TableRow>
               ))}
               {courses.length === 0 && (
-                <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Belum ada kursus.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="py-10 text-center text-muted-foreground">Belum ada kursus.</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
