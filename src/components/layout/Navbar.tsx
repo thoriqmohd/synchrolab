@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import logo from "@/assets/logo-synchronetwork.png";
 
 const links = [
   { to: "/", label: "Utama" },
@@ -20,11 +21,9 @@ export const Navbar = () => {
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/85 backdrop-blur-lg">
       <div className="container flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5" onClick={() => setOpen(false)}>
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-accent shadow-glow">
-            <span className="font-display text-lg font-bold text-accent-foreground">S</span>
-          </div>
+          <img src={logo} alt="SynchroLab" className="h-9 w-9 object-contain" />
           <div className="flex flex-col leading-none">
-            <span className="font-display text-lg font-bold text-primary">Synchrolab</span>
+            <span className="font-display text-lg font-bold text-primary">SynchroLab</span>
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">.my</span>
           </div>
         </Link>

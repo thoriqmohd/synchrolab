@@ -49,7 +49,7 @@ const Contact = () => {
         <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr]">
           <div className="space-y-4">
             {[
-              { icon: MapPin, title: "Lokasi", lines: ["Synchronetwork Sdn Bhd", "Cyberjaya, Selangor, Malaysia"] },
+              { icon: MapPin, title: "Lokasi", lines: ["Synchronetwork Sdn. Bhd. (1194790-K)", "79A, Jalan Nova U5/N, Subang Bestari", "Sek. U5, 40150 Shah Alam, Selangor"] },
               { icon: Mail, title: "E-mel", lines: ["booking@synchrolab.my", "info@synchronetwork.my"] },
               { icon: Phone, title: "Telefon", lines: ["+603-1234 5678", "Isnin – Jumaat, 9am – 6pm"] },
             ].map((c) => (
