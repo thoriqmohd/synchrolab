@@ -56,7 +56,10 @@ const Index = () => {
             <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-white/80">
               <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-accent" /> 50+ Kursus IT</div>
               <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-accent" /> 2,000+ Peserta</div>
-              <div className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-accent" /> HRD Corp Approved</div>
+              <div className="flex items-center gap-2.5 rounded-full bg-white/95 px-3 py-1.5 shadow-md ring-1 ring-white/40">
+                <img src={hrdcorpBadge} alt="HRD Corp Registered Training Provider" className="h-7 w-7 object-contain" />
+                <span className="text-xs font-semibold text-primary">HRD Corp Registered Training Provider</span>
+              </div>
             </div>
           </div>
         </div>
