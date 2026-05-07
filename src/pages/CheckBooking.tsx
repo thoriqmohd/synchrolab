@@ -171,8 +171,8 @@ const CheckBooking = () => {
                 </dl>
 
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <Button size="sm" variant="accent">Muat Turun Resit (PDF)</Button>
-                  <Button size="sm" variant="outline">Muat Turun Sijil</Button>
+                  <Button size="sm" variant="accent" onClick={downloadReceipt}>Muat Turun Resit (PDF)</Button>
+                  <Button size="sm" variant="outline" onClick={downloadCertificate}>Muat Turun Sijil</Button>
                 </div>
               </div>
             </div>
