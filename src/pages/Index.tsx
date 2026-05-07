@@ -5,6 +5,7 @@ import { CourseCard } from "@/components/CourseCard";
 import { testimonials } from "@/data/catalog";
 import { useCourses, useFeaturedCourses } from "@/hooks/useCatalog";
 import heroImg from "@/assets/hero-classroom.jpg";
+import hrdcorpBadge from "@/assets/hrdcorp-badge.png";
 
 const features = [
   { icon: Award, title: "Pengajar Bertauliah", desc: "Trainer industri dengan pensijilan antarabangsa Microsoft, Cisco, AWS dan lebih lagi." },
