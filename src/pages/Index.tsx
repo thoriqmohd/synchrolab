@@ -22,9 +22,10 @@ const Index = () => {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-gradient-hero">
-        <div className="absolute inset-0 opacity-20">
+        <div className="absolute inset-y-0 right-0 w-full md:w-3/5 lg:w-1/2">
           <img src={heroImg} alt="" className="h-full w-full object-cover" width={1600} height={1024} />
-          <div className="absolute inset-0 bg-gradient-hero opacity-70" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-primary/60 via-transparent to-transparent" />
         </div>
 
         <div className="container relative py-20 md:py-28 lg:py-32">
