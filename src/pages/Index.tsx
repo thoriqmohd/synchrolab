@@ -94,7 +94,8 @@ const Index = () => {
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-semibold uppercase tracking-wider text-accent">Kenapa SynchroLab</p>
             <h2 className="mt-2 font-display text-3xl font-bold text-foreground md:text-4xl">
-              Pilihan profesional Malaysia untuk latihan IT
+              Pilihan profesional Malaysia <br />
+              untuk latihan IT
             </h2>
             <p className="mt-4 text-muted-foreground">
               Kami komited menyampaikan pengalaman latihan berkualiti tinggi yang relevan dengan pasaran tempatan.
